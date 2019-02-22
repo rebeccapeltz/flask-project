@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
+{% block title %}Book{% endblock %}
 
 {% block heading %}
-<h1>Book</h1>
+<h1>Books</h1>
 {% endblock %}
 
 {% block body %}
 
-
 <ul>
-  {% for book in books %}
+
   <li>
     <p>Title: {{book.title}}</p>
   </li>
@@ -16,21 +16,15 @@
     <p>Author: {{book.author}}</p>
   </li>
   <li>
-    <p>ISBN: {{book.isbn</p>
+    <p>ISBN: {{book.isbn}}</p>
   </li>
   <li>
     <p>Year: {{book.year}}</p>
   </li>
-
-  <!-- TODO don't show if already rate or allow updates?-->
-<h2>Review</h2>
-    <form action="{{ url_for('review') }}" method="post">
-        <input type="range" name="rating"   min="1" max="5" placeholder="Enter a rating between 1 and 5">
-        <input type="text" name="comment" placeholder="Enter Comments">
-        
-        <button>Submit</button>
-    </form>
-
-  {% endfor %}
 </ul>
+
+
+<p>
+  <a href="{{ url_for('index')}}">Home</a>
+</p>
 {% endblock %}

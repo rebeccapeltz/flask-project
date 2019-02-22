@@ -73,18 +73,26 @@ def register_process():
 
 @app.route("/search", methods=["POST"])
 def search():
-    #get isbn, title, author and year and create a query
-    books = []
+    #get isbn, title, authorand create a query
+    isbn = request.form.get("isbn")
+    author = request.form.get("author")
+    title = request.form.get("title")
+
+    query = f"SELECT * FROM books WHERE isbn LIKE \'%{isbn}%\' AND author LIKE \'%{author}%\' AND title LIKE \'%{title}%\'"
+    app.logger.debug("QQQ:",query)
+    books = db.execute(query,{"isbn": isbn, "author":author, "title":title}).fetchall()
+    app.logger.debug("books length", len(books))
     return render_template("books.html",books = books)
 
 @app.route("/books/<int:book_id>")
 def books(book_id):
-   """Lists details about a single book."""
-    #book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
-    #if book is None:
-        #return render_template("error.html", message="No books found.")
+    app.logger.debug("XXXXXXXXXXXbook_id",book_id)
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    app.logger.debug("book", book)
+    if book is None:
+        return render_template("error.html", message="No books found.")
     # get ratings
     # get goodreads ratings
     # Make sure book exists.
-    #return render_template("book.html", book=book)
+    return render_template("book.html", book=book)
 
