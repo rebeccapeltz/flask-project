@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, redirect, session, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -17,7 +17,10 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    username = ""
+    if (session['username'] != None):
+       username = session['username']
+    return render_template("index.html", username=username)
 
 @app.route("/hello", methods=["POST"])
 def hello():
@@ -28,7 +31,7 @@ def hello():
 def logout():
     #check for session[userid] and set to empty
     session["username"] = None
-    return render_template("index.html")
+    return redirect(url_for('index'))
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -44,7 +47,29 @@ def login():
         session["username"] = username
     else:
         return render_template("error.html", message="Invalid Login (not registered).")
-    return render_template("index.html")
+    return redirect(url_for('index'))
+
+
+@app.route("/register", methods=["GET"])
+def register():
+  return render_template("register.html")
+
+@app.route("/register_process", methods=["POST"])
+def register_process():
+    # get user name and password
+    username = request.form.get("username")
+    password = request.form.get("password")
+    # check that user name not used and return error if used
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount > 0:
+        return render_template("error.html", message="Registration error (username exsits).")
+  # insert username and password
+    else:
+        db.execute("INSERT INTO users (username, password) VALUES (:username, :password)", 
+            {"username": username, "password":password})
+        db.commit()
+        # send to sucess
+        return render_template("success.html", message="Registration success.")
+
 
 @app.route("/search", methods=["POST"])
 def search():

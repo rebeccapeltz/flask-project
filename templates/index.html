@@ -1,46 +1,50 @@
 {% extends "layout.html" %}
+{% block title %}Home{% endblock %}
 
 {% block heading %}
-    <h1>Welcome to Book World</h1>
+
+<h2>Search for Books</h2>
 {% endblock %}
 
 {% block body %}
+
 {% if session.get('username') %}
-    <h2>Logout</h2>
-    <form action="{{ url_for('logout') }}" method="post">
-        <button>Submit</button>
-    </form>
+Welcome {{username}}
+<h2>Logout</h2>
+<form action="{{ url_for('logout') }}" method="post">
+    <button>Submit</button>
+</form>
 {% else %}
-    <h2>Login</h2>
-    <form action="{{ url_for('login') }}" method="post">
-        <p><input type="text" name="username" placeholder="Enter Your User Name"></p>
-        <p>
-            <input type="password" name="password" placeholder="Enter your password">
-        </p>
-        <p>
-            <button>Submit</button>
-        </p>
-    </form>
+<h2>Login</h2>
+<form action="{{ url_for('login') }}" method="post">
+    <p><input type="text" name="username" placeholder="Enter Your User Name"></p>
+    <p>
+        <input type="password" name="password" placeholder="Enter your password">
+    </p>
+    <p>
+        <button>Submit</button>
+    </p>
+</form>
+<p>
+    <a href="{{ url_for('register')}}">Register</a>
+</p>
 {% endif %}
-    
+<h3>You may enter parial strings for this search</h3>
+<form action="{{ url_for('search') }}" method="post">
+    <p>
+        <input type="text" name="isbn" placeholder="Enter ISBN">
+    </p>
+    <p>
+        <input type="text" name="author" placeholder="Enter author">
+    </p>
+    <input type="text" name="title" placeholder="Enter title">
 
-    <h2>Book Search</h2>
-    <h3>You may enter parial strings for this search</h3>
-    <form action="{{ url_for('search') }}" method="post">
-        <p>
-            <input type="text" name="isbn" placeholder="Enter ISBN">
-        </p>
-        <p>
-            <input type="text" name="author" placeholder="Enter author">
-        </p>
-        <input type="text" name="title" placeholder="Enter title">
+    <p>
+        <button>Submit</button>
+    </p>
+</form>
 
-        <p>
-            <button>Submit</button>
-        </p>
-    </form>
-
-    <!-- <form action="{{ url_for('hello') }}" method="post">
+<!-- <form action="{{ url_for('hello') }}" method="post">
         <input type="text" name="name" placeholder="Enter Your Name">
         <button>Submit</button>
     </form> -->
