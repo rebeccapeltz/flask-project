@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Error
+{% endblock %}
+
+{% block body %}
+<h1>Error</h1>
+
+{{ message }}
+<p>
+  <a href="{{ url_for('index')}}">Home</a>
+</p>
+{% endblock %}

@@ -5,11 +5,12 @@
 {% endblock %}
 
 {% block body %}
+{% if session.get('username') %}
     <h2>Logout</h2>
     <form action="{{ url_for('logout') }}" method="post">
         <button>Submit</button>
     </form>
-
+{% else %}
     <h2>Login</h2>
     <form action="{{ url_for('login') }}" method="post">
         <p><input type="text" name="username" placeholder="Enter Your User Name"></p>
@@ -20,6 +21,8 @@
             <button>Submit</button>
         </p>
     </form>
+{% endif %}
+    
 
     <h2>Book Search</h2>
     <h3>You may enter parial strings for this search</h3>

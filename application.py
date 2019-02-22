@@ -14,7 +14,6 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-#  save  sesssoin userid
 
 @app.route("/")
 def index():
@@ -28,12 +27,23 @@ def hello():
 @app.route("/logout", methods=["POST"])
 def logout():
     #check for session[userid] and set to empty
+    session["username"] = None
     return render_template("index.html")
 
 @app.route("/login", methods=["POST"])
 def login():
+    #allow a user to sign on and automatically sign off existing user
     #get username, password input and look up in db
+    username = request.form.get("username")
+    password = request.form.get("password")
+    #some validation
+    if len(username) == 0 or len (password) == 0:
+      return render_template("error.html", message="Invalid Login (emtpy strings).")
     #if found set the sesssion[userid] = to id of user
+    if db.execute("SELECT * FROM users WHERE username = :username AND password = :password", {"username": username, "password":password}).rowcount == 1:
+        session["username"] = username
+    else:
+        return render_template("error.html", message="Invalid Login (not registered).")
     return render_template("index.html")
 
 @app.route("/search", methods=["POST"])
