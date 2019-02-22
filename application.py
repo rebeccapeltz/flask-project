@@ -84,9 +84,9 @@ def search():
     app.logger.debug("books length", len(books))
     return render_template("books.html",books = books)
 
-@app.route("/books/<int:book_id>")
+@app.route("/books/<int:book_id>", methods=["GET"])
 def books(book_id):
-    app.logger.debug("XXXXXXXXXXXbook_id",book_id)
+    app.logger.debug("book_id",book_id)
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     app.logger.debug("book", book)
     if book is None:
@@ -96,3 +96,22 @@ def books(book_id):
     # Make sure book exists.
     return render_template("book.html", book=book)
 
+@app.route("/review", methods=["POST"])
+def review():
+  if 'username' not in session:
+      return render_template("error.html", message="You must be logged in to use this feature (review).")
+  #get book id, user id, rating, comments
+  rating = request.form.get("rating")
+  comments = request.form.get("comments")
+  bookid = request.form.get("book_id")
+  user = db.execute("SELECT * FROM users WHERE username = :username", {"username": session.get("username")}).fetchone()
+  if user is None:
+      return render_template("error.html", message="Can't find userid in reviews.")
+  userid = user.id
+  app.logger.debug("userid",user.id)
+  
+  # insert into review
+
+  # send back to book
+  # return redirect(url_for('index'),book, rating)
+  return render_template("success.html", message="Review success.")

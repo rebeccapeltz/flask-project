@@ -7,21 +7,36 @@
 
 {% block body %}
 
-<ul>
 
-  <li>
-    <p>Title: {{book.title}}</p>
-  </li>
-  <li>
-    <p>Author: {{book.author}}</p>
-  </li>
-  <li>
-    <p>ISBN: {{book.isbn}}</p>
-  </li>
-  <li>
-    <p>Year: {{book.year}}</p>
-  </li>
-</ul>
+
+
+<ul>
+    <li>
+      <p>Title: {{book.title}}</p>
+    </li>
+    <li>
+      <p>Author: {{book.author}}</p>
+    </li>
+    <li>
+      <p>ISBN: {{book.isbn}}</p>
+    </li>
+    <li>
+      <p>Year: {{book.year}}</p>
+    </li>
+  </ul>
+  
+  <form action="{{ url_for('review') }}" method="post">
+    <p>
+      <label for="rating">Rate bewteen between 1 and 5</label>
+      <input type="range" name="rating" min="1" max="5">
+    </p>
+    <p>
+      <label for="comments">Enter comments</label>
+      <textarea name="comments" rows="4" cols="50"></textarea>
+    </p>
+    <input type="hidden" name="book_id" value="{{book.id}}">
+    <button>Submit</button>
+  </form> 
 
 
 <p>
