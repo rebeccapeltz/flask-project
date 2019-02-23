@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for,jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -115,3 +115,28 @@ def review():
   # send back to book
   # return redirect(url_for('index'),book, rating)
   return render_template("success.html", message="Review success.")
+
+@app.route("/api/<isbn>", methods=["GET"])
+def api(isbn):
+    if 'username' not in session:
+        return render_template("error.html", message="You must be logged in to use this feature (api/isbn).")
+  
+    app.logger.debug("isbn", isbn)
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    app.logger.debug("book", book)
+    if book is None:
+        content = {'please move along': 'nothing to see here'}
+        return content, status.HTTP_404_NOT_FOUND
+        
+    book_dict =  {"title": book.title,
+    "author": book.author,
+    "year": book.year,
+    "isbn": book.isbn,
+    "review_count": 0,
+    "average_score": 0.0}
+    return jsonify(book_dict)
+
+
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     return render_template('404.html'), 404
