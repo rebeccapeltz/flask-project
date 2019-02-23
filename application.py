@@ -125,9 +125,8 @@ def api(isbn):
     book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
     app.logger.debug("book", book)
     if book is None:
-        content = {'please move along': 'nothing to see here'}
-        return content, status.HTTP_404_NOT_FOUND
-        
+        return jsonify({"message": "book not found by isbn provided"}), 404
+
     book_dict =  {"title": book.title,
     "author": book.author,
     "year": book.year,
