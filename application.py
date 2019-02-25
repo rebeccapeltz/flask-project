@@ -18,7 +18,7 @@ db = scoped_session(sessionmaker(bind=engine))
 @app.route("/")
 def index():
     username = ""
-    if (session['username'] != None):
+    if (session.get('username') != None):
        username = session['username']
     return render_template("index.html", username=username)
 
@@ -88,13 +88,21 @@ def search():
 def books(book_id):
     app.logger.debug("book_id",book_id)
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    
     app.logger.debug("book", book)
+     # Make sure book exists.
     if book is None:
-        return render_template("error.html", message="No books found.")
-    # get ratings
+        return render_template("error.html", message="No books found (books/book_id).")
+    # get user
+    user = db.execute("SELECT * FROM users WHERE username = :username", {"username": session.get("username")}).fetchone()
+    if user is None:
+        return render_template("error.html", message="No user found (books/book_id).")
+    # get review
+    review = db.execute("SELECT * FROM reviews WHERE book_id = :book_id AND user_id=:user_id", 
+        {"book_id": book.id,"user_id":user.id}).fetchone()
     # get goodreads ratings
-    # Make sure book exists.
-    return render_template("book.html", book=book)
+   
+    return render_template("book.html", book=book, review=review)
 
 @app.route("/review", methods=["POST"])
 def review():
@@ -106,15 +114,33 @@ def review():
   bookid = request.form.get("book_id")
   user = db.execute("SELECT * FROM users WHERE username = :username", {"username": session.get("username")}).fetchone()
   if user is None:
-      return render_template("error.html", message="Can't find userid in reviews.")
+      return render_template("error.html", message="Can't find userid to post review.")
   userid = user.id
   app.logger.debug("userid",user.id)
+  # does review exist
+  review = db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND book_id= :book_id", {"user_id": userid, "book_id":bookid}).fetchone()
+  if review is None:
+      # insert into review
+      db.execute("INSERT INTO reviews (book_id, user_id, comments, rating) VALUES (:book_id, :user_id, :comments, :rating)", 
+            {"book_id": bookid, "user_id":userid, "comments":comments, "rating":rating})
+      db.commit()
+  else:
+      #update
+      db.execute("UPDATE reviews SET rating = :rating, comments = :comments WHERE user_id = :user_id AND book_id= :book_id",
+       {"user_id": userid, "book_id":bookid,"rating": rating, "comments":comments})
+      db.commit()
   
-  # insert into review
-
   # send back to book
   # return redirect(url_for('index'),book, rating)
-  return render_template("success.html", message="Review success.")
+  # return render_template("success.html", message="Review success.")
+
+  # get book and review and send back to book
+  book = db.execute("SELECT * FROM books WHERE id = :bookid", {"bookid": bookid}).fetchone()
+  review = db.execute("SELECT rating, comments FROM reviews WHERE book_id = :book_id AND user_id = :user_id", {"book_id": bookid,"user_id":userid}).fetchone()
+  reviewAgg = db.execute("SELECT AVG(rating), COUNT(*) FROM reviews WHERE book_id = :book_id GROUP BY book_id", {"book_id": bookid}).fetchone()
+
+  return render_template("book.html", book=book, review=review, reviewAgg=reviewAgg)
+
 
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
