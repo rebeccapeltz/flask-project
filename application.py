@@ -1,6 +1,8 @@
 import os
+import json
 
 from flask import Flask, render_template, request, redirect, session, url_for,jsonify
+import requests
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -77,19 +79,20 @@ def search():
     isbn = request.form.get("isbn")
     author = request.form.get("author")
     title = request.form.get("title")
+    #app.logger.debug("QQQ:",isbn, author, title)
 
     query = f"SELECT * FROM books WHERE isbn LIKE \'%{isbn}%\' AND author LIKE \'%{author}%\' AND title LIKE \'%{title}%\'"
-    app.logger.debug("QQQ:",query)
+    #app.logger.debug("QQQ:",query)
     books = db.execute(query,{"isbn": isbn, "author":author, "title":title}).fetchall()
-    app.logger.debug("books length", len(books))
+    #app.logger.debug("books length", len(books))
     return render_template("books.html",books = books)
 
 @app.route("/books/<int:book_id>", methods=["GET"])
 def books(book_id):
-    app.logger.debug("book_id",book_id)
+    #app.logger.debug("book_id",book_id)
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     
-    app.logger.debug("book", book)
+    #app.logger.debug("book", book)
      # Make sure book exists.
     if book is None:
         return render_template("error.html", message="No books found (books/book_id).")
@@ -100,9 +103,29 @@ def books(book_id):
     # get review
     review = db.execute("SELECT * FROM reviews WHERE book_id = :book_id AND user_id=:user_id", 
         {"book_id": book.id,"user_id":user.id}).fetchone()
+    # get all reviews for this book
+    reviews = db.execute("SELECT * FROM reviews WHERE book_id = :book_id", {"book_id": book.id}).fetchall()
+    #app.logger.debug("zzzzzzzzzz", reviews)
+    # get this app ratings
+    reviewAgg = db.execute("SELECT AVG(rating), COUNT(*) FROM reviews WHERE book_id = :book_id GROUP BY book_id", {"book_id": book.id}).fetchone()
     # get goodreads ratings
-   
-    return render_template("book.html", book=book, review=review)
+    
+    try:
+        url = 'https://www.goodreads.com/book/review_counts.json'
+        #app.logger.debug("wwwwwbookreads isbn", book.isbn)
+        resp = requests.get(url,params={'key':'ZogGCMyT1LP4Nak1cYDM2Q','isbns':book.isbn,'format':'json'})
+        #app.logger.debug("xxxxxxxxxbookreads r",resp.json(),type(resp.json()), resp.encoding)
+        rdict = resp.json()       
+        gr_average_rating = rdict['books'][0]["average_rating"]
+        gr_reviews_count = rdict['books'][0]["reviews_count"]
+        #app.logger.debug("qqqqqqqqqqq", average_rating, reviews_count)
+
+    
+    except:
+        app.logger.debug("yyyyyyyyyybookreads r",resp)
+        return render_template("error.html", message=f"Unable to read from goodreads. {resp.status_code}")
+
+    return render_template("book.html", book=book, review=review, reviews=reviews, reviewAgg=reviewAgg, gr_average_rating=gr_average_rating, gr_reviews_count=gr_reviews_count)
 
 @app.route("/review", methods=["POST"])
 def review():
@@ -116,7 +139,7 @@ def review():
   if user is None:
       return render_template("error.html", message="Can't find userid to post review.")
   userid = user.id
-  app.logger.debug("userid",user.id)
+  #app.logger.debug("userid",user.id)
   # does review exist
   review = db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND book_id= :book_id", {"user_id": userid, "book_id":bookid}).fetchone()
   if review is None:
@@ -138,7 +161,7 @@ def review():
   book = db.execute("SELECT * FROM books WHERE id = :bookid", {"bookid": bookid}).fetchone()
   review = db.execute("SELECT rating, comments FROM reviews WHERE book_id = :book_id AND user_id = :user_id", {"book_id": bookid,"user_id":userid}).fetchone()
   reviewAgg = db.execute("SELECT AVG(rating), COUNT(*) FROM reviews WHERE book_id = :book_id GROUP BY book_id", {"book_id": bookid}).fetchone()
-
+   
   return render_template("book.html", book=book, review=review, reviewAgg=reviewAgg)
 
 
@@ -147,9 +170,9 @@ def api(isbn):
     if 'username' not in session:
         return render_template("error.html", message="You must be logged in to use this feature (api/isbn).")
   
-    app.logger.debug("isbn", isbn)
+    #app.logger.debug("isbn", isbn)
     book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
-    app.logger.debug("book", book)
+    #app.logger.debug("book", book)
     if book is None:
         return jsonify({"message": "book not found by isbn provided"}), 404
 

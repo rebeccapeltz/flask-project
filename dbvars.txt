@@ -18,3 +18,7 @@ URI
 postgres://lwjigubjkxbovx:ffc6a1346bfd876c981b9b326f42eb4a75c3d36e7e064b4b17f09473c0622cf4@ec2-23-21-165-188.compute-1.amazonaws.com:5432/d6v5unfqr28a81
 Heroku CLI
 heroku pg:psql postgresql-defined-13493 --app project1-flask-peltz
+
+goodreads
+key: ZogGCMyT1LP4Nak1cYDM2Q
+secret: GvfTKev7CQ66rFfGhU7IhR673bwhhC9upya9lnPtdA

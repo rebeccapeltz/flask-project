@@ -29,8 +29,24 @@
     <li>
       <p>Rating Average: {{reviewAgg.avg | round(2)}}</p>
     </li>
+    {% if gr_average_rating %}
+    <li>
+      <p>Good Reads Rating Average: {{gr_average_rating}}</p>
+    </li>
+    {% endif %}
+    {% if gr_average_rating %}
+    <li>
+      <p>Good Reads Reviews Count: {{gr_reviews_count}}</p>
+    </li>
+    {% endif %}
   </ul>
-  
+  <h2>All Reviews</h2>
+
+  {% for review in reviews %}
+  <p>rating: {{review.rating}} comment: {{review.comments}}</p>
+  {% endfor %}
+
+<hr>
   <form action="{{ url_for('review') }}" method="post">
     <p>
       <label for="rating">Rate book bewteen between 1 and 5 </label>
