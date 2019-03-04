@@ -2,6 +2,92 @@
 
 ## Web Programming with Python and JavaScript
 
+### Tables created for PostgreSQL
+*books*
+```
+CREATE TABLE books (
+ id SERIAL PRIMARY KEY,
+ isbn VARCHAR NOT NULL,
+ title VARCHAR NOT NULL,
+ author VARCHAR NOT NULL,
+ year INTEGER NOT NULL
+); 
+```
+*reviews* 
+```
+CREATE TABLE reviews (
+ id SERIAL PRIMARY KEY,
+ book_id INTEGER REFERENCES books (id),
+ user_id INTEGER REFERENCES users (id),
+ comments VARCHAR,
+ rating INTEGER,
+ CHECK (rating > 0),
+ CHECK (rating < 6)
+);
+```
+*users* 
+```
+CREATE TABLE users (
+ id SERIAL PRIMARY KEY,
+ username VARCHAR NOT NULL,
+ password VARCHAR NOT NULL
+); 
+```
+###
+Routes
+`/`
+This shows a login form and a register link if not logged in
+Once user is logged in a search form is revealed and user can do wild card search on an variable
+If data is found the user is routed to books
+Also submits a logout if a user is logged in and clicks on logout
+
+`/register`  
+This allows user to register with email and password and takes user back to home
+
+`/search`  
+Process the search inputs and send to books page
+
+`/review`  
+Process the review form and rerender the book.html page
+
+`/books/ISBN`  
+Process link to a single book and send to book.html page (NOTE: with more time I would have liked to move /reveiw code into /books/ISBN and have it process GET and POST)
+
+`/api/ISBN`  
+Looks up ISBN and returns data collected by app in json format if found or a 404 status code if not found
+
+## Pages
+
+`index.html`  
+render the login and logout 
+
+`book.html` 
+If user clicks on a book link they are shown an individual book with ratings from good reads and what ever has been collected in the app.  
+
+There is also form where the user can provide a rating and commments.  The user can't enter more than one comment about the book, but they can update their rating and comments.
+
+`books.html`  
+A place to list books found in search
+
+`register.html`  
+A registration form
+ 
+`404.html`    
+A place for unfound pages
+
+
+`success.html`
+There is a success page mostly used in development while working on queries.
+
+`/error`
+There is an error page for errors with messages
+
+### NOTES:
+I would have liked to do some refactoring and styling but didn't have enough time.  I could have added some more message about book not found or ratings not found.
+
+
+
+
 ### Requirements  
 
 1. Registration: Users should be able to register for your website, providing (at minimum) a username and password.
